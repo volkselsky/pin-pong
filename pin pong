@@ -1,0 +1,119 @@
+import pygame
+
+class GameSprite():
+    def __init__(self,x, y, width, height, color = None):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.color = color
+        self.rect.x = x
+        self.rect.y = y
+        self.height = height
+
+    def draw(self, surface):
+        pygame.draw.rect(surface, self.color, self.rect)
+    
+    def collidepoint(self, x, y):
+        return self.rect.collidepoint(x,y)
+
+    def colliderect(self, rect):
+        return self.rect.colliderect(rect)
+
+class Player(GameSprite):
+    def __init__(self, x, y, width, height, color = None):
+        super().__init__(x, y, width, height, color = None)
+        self.rect = pygame.Rect(x, y, width, height)
+        self.color = color
+        self.rect.x = x
+        self.rect.y = y
+        self.height = height
+        self.width = width
+        self.speed = 5
+        
+    def update_mouse(self):
+        if not (mouse_pos[1] >= (height_ds - (self.height / 2))) and not (mouse_pos[1] <= (self.height / 2)):
+            self.rect.y = mouse_pos[1] - (self.height / 2)
+        elif mouse_pos[1] >= (height_ds - (self.height / 2)):
+            self.rect.y = height_ds - self.height
+        elif mouse_pos[1] <= (self.height / 2):
+            self.rect.y = 0
+    
+    def update_keyboardws(self):
+        Keys_pressed = pygame.key.get_pressed()
+        if Keys_pressed[pygame.K_w] and not (self.rect.y == 0) :
+            self.rect.y -= 5
+        if Keys_pressed[pygame.K_s] and not (self.rect.y == height_ds - self.height):
+            self.rect.y += 5
+    
+
+class Ball(GameSprite):
+    def __init__(self,x, y, width, height, speed, color = None):
+        super().__init__(x, y, width, height, color = None)
+        self.rect = pygame.Rect(x, y, width, height)
+        self.color = color
+        self.rect.x = x
+        self.rect.y = y
+        self.height = height
+        self.width = width
+        self.dx = speed
+        self.dy = speed
+        self.no_lose = False
+    
+    def update(self, listt):
+        rect1 = listt[0]
+        rect2 = listt[1]
+        self.rect.x += self.dx
+        self.rect.y += self.dy
+        if self.colliderect(rect1.rect):
+            self.dx *= -1
+        if self.colliderect(rect2.rect):
+            self.dx *= -1
+        
+        if self.rect.y > height_ds or self.rect.y < 0:
+            self.dy *= -1
+        if self.no_lose == True:
+            if self.rect.x > widht_ds or self.rect.x < 0:
+                self.dx *= -1
+    
+    def set_no_lose(self):
+        self.no_lose = True
+
+pygame.init()
+
+
+widht_ds = 500
+height_ds = 430
+window = pygame.display.set_mode((widht_ds, height_ds))
+window.fill((0, 0, 0))
+clock = pygame.time.Clock()
+game = True
+
+player1 = Player(0, 100, 10, 90, (0, 0, 255))
+player2 = Player(widht_ds - 10, 100, 10, 90, (255, 0, 0))
+players = [player1, player2]
+ball = Ball(10, 100, 10, 10, 5, (255, 255, 0))
+aam1 = GameSprite(0, 0, 500, 500, (255, 0, 255))
+
+point = 0
+while game:
+    window.fill((50, 205, 50))
+    mouse_pos = pygame.mouse.get_pos()
+    mouse_click_pos = None 
+
+
+    for e in pygame.event.get():
+        if e.type == pygame.QUIT:
+            game = False
+        player1.update_keyboardws()
+
+    player1.draw(window)
+
+    player2.update_mouse()
+    player2.draw(window)
+
+
+    ball.draw(window)
+    ball.update(players)
+    ball.set_no_lose()
+    
+
+    pygame.display.update()
+    clock.tick(120)
